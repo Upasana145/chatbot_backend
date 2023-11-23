@@ -130,8 +130,17 @@ exports.getDepts = async (req, res) => {
       query: sql,
       values: [],
     });
+    let arr = [];
+    result.map((item) => {
+      arr.push(item.name);
+    });
+    let modRes = {
+      heading: "Please choose a department",
+      para: "",
+      suggestions: arr,
+    };
     if (result && result.length > 0) {
-      resSend(res, true, 200, "Success retrive all depts", result, null);
+      resSend(res, true, 200, "Success retrive all depts", modRes, null);
     } else {
       resSend(res, false, 200, "Data is not present!", result, null);
     }
