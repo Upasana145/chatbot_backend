@@ -162,8 +162,19 @@ exports.getDoctors = async (req, res) => {
       values: [],
     });
 
+    let arr = [];
+    result.map((item) => {
+      arr.push(item.drname);
+    });
+
+    let modRes = {
+      heading: "Please choose the doctor you want to visit.",
+      para: "",
+      suggestions: arr.length > 0 ? arr : ["No Doctor is available."],
+    };
+
     if (result && result.length > 0) {
-      resSend(res, true, 200, "Success retrive all doctors", result, null);
+      resSend(res, true, 200, "Success retrive all doctors", modRes, null);
     } else {
       resSend(res, false, 200, "Data is not present!", result, null);
     }
@@ -172,20 +183,44 @@ exports.getDoctors = async (req, res) => {
     resSend(res, false, 400, "Error", error, null);
   }
 };
+
 // Booking
 exports.bookings = async (req, res) => {
-  const { dept, drname, date, time } = req.body;
+  const { auth_id, dept, drname, date, time } = req.body;
 
   try {
-    let sql = `INSERT INTO booking (dept, drname, date, time)
-      VALUES (?, ?, ?, ?) `;
+    let sql = `INSERT INTO booking (auth_id, dept, drname, date, time)
+      VALUES (?, ?, ?, ?, ?) `;
 
     const result = await query({
       query: sql,
-      values: [dept, drname, date, time],
+      values: [auth_id, dept, drname, date, time],
     });
 
     resSend(res, true, 200, "Appointment successfully booked!", result, null);
+  } catch (error) {
+    console.log(error);
+    resSend(res, false, 400, "Error", error, null);
+  }
+};
+
+// getBookings by doctor
+exports.getAllBookings = async (req, res) => {
+  const { id } = req.body;
+
+  try {
+    let sql = `SELECT * From booking WHERE auth_id = ${id}`;
+
+    const result = await query({
+      query: sql,
+      values: [],
+    });
+
+    if (result && result.length > 0) {
+      resSend(res, true, 200, "Success retrive all doctors", result, null);
+    } else {
+      resSend(res, false, 200, "Data is not present!", result, null);
+    }
   } catch (error) {
     console.log(error);
     resSend(res, false, 400, "Error", error, null);

@@ -79,12 +79,17 @@ exports.verifyOTP = async (req, res) => {
           query: sqlUpdate,
           values: [""],
         });
-        resSend(res, true, 200, "Login Successfull!", null, null);
+        let modRes = {
+          id: result[0].auth_id,
+          email: result[0].email,
+        };
+        const token = generateToken(email);
+        resSend(res, true, 200, "Login Successfull!", modRes, token);
       } else {
         resSend(res, false, 200, "OTP is incorrect!", null, null);
       }
     } else {
-      resSend(res, false, 200, "USER ID is invalid!", result, null);
+      resSend(res, false, 200, "USER ID is invalid!", null, null);
     }
   } catch (error) {
     console.log(error);
@@ -122,60 +127,88 @@ exports.verifyOTP = async (req, res) => {
 // };
 
 //Registration
-// exports.registrationHandler = async (req, res) => {
-//   const {
-//     fname,
-//     lname,
-//     dob,
-//     gender,
-//     address,
-//     postalcode,
-//     country,
-//     passportno,
-//     visanovisatype,
-//     email,
-//     mobileno,
-//     password,
-//   } = req.body;
+exports.registrationHandler = async (req, res) => {
+  const {
+    fname,
+    lname,
+    dob,
+    gender,
+    address,
+    postalcode,
+    country,
+    passportno,
+    visanovisatype,
+    email,
+    mobileno,
+    password,
+  } = req.body;
 
-//   try {
-//     const emailExists = await query({
-//       query: "SELECT COUNT(*) as count FROM auth WHERE email = ?",
-//       values: [email],
-//     });
+  try {
+    const emailExists = await query({
+      query: "SELECT COUNT(*) as count FROM auth WHERE email = ?",
+      values: [email],
+    });
 
-//     if (emailExists[0].count > 0) {
-//       resSend(res, false, 400, "Email already exists", null, null);
-//       return;
-//     }
+    if (emailExists[0].count > 0) {
+      resSend(res, false, 400, "Email already exists", null, null);
+      return;
+    }
 
-//     let sql = `INSERT INTO auth (fname, lname, dob, gender, address, postalcode, country, passportno, visanovisatype, email, mobileno, password )
-//       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    let sql = `INSERT INTO auth (fname, lname, dob, gender, address, postalcode, country, passportno, visanovisatype, email, mobileno, password )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
-//     const result = await query({
-//       query: sql,
-//       values: [
-//         fname,
-//         lname,
-//         dob,
-//         gender,
-//         address,
-//         postalcode,
-//         country,
-//         passportno,
-//         visanovisatype,
-//         email,
-//         mobileno,
-//         password,
-//       ],
-//     });
+    const result = await query({
+      query: sql,
+      values: [
+        fname,
+        lname,
+        dob,
+        gender,
+        address,
+        postalcode,
+        country,
+        passportno,
+        visanovisatype,
+        email,
+        mobileno,
+        password,
+      ],
+    });
 
-//     resSend(res, true, 200, "Registration successful!", result, null);
-//   } catch (error) {
-//     console.log(error);
-//     resSend(res, false, 400, "Error", error, null);
-//   }
-// };
+    resSend(res, true, 200, "Registration successful!", result, null);
+  } catch (error) {
+    console.log(error);
+    resSend(res, false, 400, "Error", error, null);
+  }
+};
+
+exports.registrationHandler2 = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const emailExists = await query({
+      query: "SELECT COUNT(*) as count FROM auth WHERE email = ?",
+      values: [email],
+    });
+
+    if (emailExists[0].count > 0) {
+      resSend(res, false, 400, "Email already exists", null, null);
+      return;
+    }
+
+    let sql = `INSERT INTO auth (email, isActive) VALUES (?, ?)`;
+
+    const result = await query({
+      query: sql,
+      values: [email, "Y"],
+    });
+
+    resSend(res, true, 200, "Registration successful!", result, null);
+  } catch (error) {
+    console.log(error);
+    resSend(res, false, 400, "Error", error, null);
+  }
+};
 
 // Notes:-
 // Check if the email already exists in the database
